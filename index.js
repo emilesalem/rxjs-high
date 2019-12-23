@@ -1,5 +1,5 @@
 const { range, timer, merge } = require('rxjs')
-const { windowTime, mergeMap, groupBy, scan, map, last, delayWhen, tap } = require('rxjs/operators')
+const { windowTime, mergeMap, groupBy, reduce, map, delayWhen, tap } = require('rxjs/operators')
 
 function kids () {
   return range(1, 7)
@@ -38,11 +38,10 @@ function startSchool () {
   return ranks()
     .pipe(
       mergeMap($g => $g.pipe(
-        scan(acc => {
+        reduce(acc => {
           ++acc.arrived
           return acc
-        }, { grade: $g.key, arrived: 0 }),
-        last()
+        }, { grade: $g.key, arrived: 0 })
       ))
     )
 }
