@@ -26,18 +26,18 @@ describe('rxjs high', () => {
           o.next(grader(1))
           o.next(grader(2))
           o.next(grader(2))
-        }, 100)
+        }, 1)
         setTimeout(() => {
           o.next(grader(2))
           o.next(grader(3))
           o.next(grader(3))
           o.next(grader(3))
           o.complete()
-        }, 130)
+        }, 3)
       })
     })
     it('should call director', done => {
-      school(120).pipe(
+      school(2).pipe(
         toArray()
       ).subscribe(x => {
         expect(director.grantPermission).callCount(4)
@@ -52,7 +52,7 @@ describe('rxjs high', () => {
         { grade: 2, arrived: 1 },
         { grade: 3, arrived: 3 }
       ]
-      school(120).pipe(
+      school(2).pipe(
         toArray()
       ).subscribe(actual => {
         expect(actual).to.eql(expected)
