@@ -1,4 +1,3 @@
 const school = require('./school')
 
-
-school().subscribe(x => console.log(x))
+school(4500).subscribe(x => console.log(x))

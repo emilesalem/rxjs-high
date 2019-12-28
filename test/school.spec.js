@@ -1,31 +1,24 @@
 const { Observable } = require('rxjs')
+const { toArray } = require('rxjs/operators')
 
 describe('rxjs high', () => {
-  let school, kids, asyncApiStub, clock
+  let school, kids, director
 
   beforeEach(() => {
-    asyncApiStub = {
-      fetchGradeInfo: sinon.stub()
+    director = {
+      grantPermission: sinon.stub().resolves(1)
     }
     school = proxyquire('school', {
-      './async-api': asyncApiStub,
+      './director': director,
       './kids': () => kids
     })
-    clock = sinon.useFakeTimers()
-  })
-
-  afterEach(() => {
-    clock.restore()
   })
 
   describe('test case 1', () => {
     /**
-     * 3 grades: grade 1 no lates, 3 ponctuals, grade 2: 1 late 2 ponctuals, grade 3: 2 lates, 1 ponctual
+     * 3 grades: grade 1: 3 ponctuals, grade 2: 1 late 2 ponctuals, grade 3: 3 lates
      */
-    let test
     beforeEach(() => {
-      test = sinon.spy()
-
       kids = new Observable(o => {
         setTimeout(() => {
           o.next(grader(1))
@@ -34,41 +27,37 @@ describe('rxjs high', () => {
           o.next(grader(2))
           o.next(grader(2))
         }, 100)
-
         setTimeout(() => {
           o.next(grader(2))
           o.next(grader(3))
           o.next(grader(3))
           o.next(grader(3))
           o.complete()
-        }, 4600)
+        }, 130)
       })
     })
-
-    it('should output ponctuals', () => {
-      school().subscribe(test)
-      clock.tick(4500)
-      expect(test).calledTwice
-      expect(test).calledWith({ grade: 1, arrived: 3 })
-      expect(test).calledWith({ grade: 2, arrived: 2 })
+    it('should call director', done => {
+      school(120).pipe(
+        toArray()
+      ).subscribe(x => {
+        expect(director.grantPermission).callCount(4)
+        done()
+      })
     })
-    it('should output bell', () => {
-      school().subscribe(test)
-      clock.tick(4501)
-      expect(test).calledWith('RRRRRRRINNG')
-    })
-    it('should output smoochers', () => {
-      school().subscribe(test)
-      clock.tick(4700)
-      expect(test).calledWith({ grade: 2, arrived: 1 })
-      expect(test).calledWith({ grade: 3, arrived: 3 })
-    })
-    it('should call async api', () => {
-      school().subscribe(test)
-      clock.tick(4500)
-      expect(asyncApiStub.fetchGradeInfo).calledTwice()
-      expect(test).calledWith({ grade: 1, arrived: 3 })
-      expect(test).calledWith({ grade: 2, arrived: 2 })
+    it('should output grouped arrivals', done => {
+      const expected = [
+        { grade: 1, arrived: 3 },
+        { grade: 2, arrived: 2 },
+        'RRRRRRRINNG',
+        { grade: 2, arrived: 1 },
+        { grade: 3, arrived: 3 }
+      ]
+      school(120).pipe(
+        toArray()
+      ).subscribe(actual => {
+        expect(actual).to.eql(expected)
+        done()
+      })
     })
   })
 })
