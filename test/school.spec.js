@@ -3,15 +3,23 @@ const { toArray } = require('rxjs/operators')
 
 describe('rxjs high', () => {
   let school, kids, director
-
+  let processBck
   beforeEach(() => {
+    processBck = process
+
+    process = {
+      send: sinon.stub()
+    }
     director = {
       grantPermission: sinon.stub().resolves(1)
     }
     school = proxyquire('school', {
-      './director': director,
-      './kids': () => kids
+      './director': director
     })
+  })
+
+  afterEach(() => {
+    process = processBck
   })
 
   describe('test case 1', () => {
@@ -37,7 +45,7 @@ describe('rxjs high', () => {
       })
     })
     it('should call director', done => {
-      school(2).pipe(
+      school(kids, 2).pipe(
         toArray()
       ).subscribe(x => {
         expect(director.grantPermission).callCount(4)
@@ -52,7 +60,7 @@ describe('rxjs high', () => {
         { grade: 2, arrived: 1 },
         { grade: 3, arrived: 3 }
       ]
-      school(2).pipe(
+      school(kids, 2).pipe(
         toArray()
       ).subscribe(actual => {
         expect(actual).to.eql(expected)

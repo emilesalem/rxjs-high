@@ -12,12 +12,17 @@
   "standard": {
     "globals": [
       "describe",
-      "it", "beforeEach", "afterEach", "expect",
+      "it",
+      "beforeEach",
+      "afterEach",
+      "expect",
       "proxyquire",
       "sinon"
     ]
   },
   "dependencies": {
+    "koa": "^2.11.0",
+    "prom-client": "^11.5.3",
     "rxjs": "^6.5.3"
   },
   "devDependencies": {
